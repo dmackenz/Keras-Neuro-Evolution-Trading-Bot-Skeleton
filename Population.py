@@ -28,12 +28,6 @@ class Population(object):
 
         self.generate_next_generation()
 
-    def single_feed_inputs(self, inputs_list, prices_list):
-        # assumes list of inputs and prices are the same length
-        for i in range(len(inputs_list)):
-            for j in range(len(self.agents)):
-                self.agents[j].single_act(inputs_list[i], prices_list[i])
-
     def batch_feed_inputs(self, inputs_list, prices_list):
         for i in range(len(self.agents)):
             self.agents[i].batch_act(inputs_list, prices_list)
