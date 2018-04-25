@@ -11,20 +11,38 @@ class Population(object):
         self.starting_cash = starting_cash
         self.starting_price = starting_price
         self.trading_fee = trading_fee
+        self.generation_number = 1
+        self.output_width = 5
 
         for i in range(self.pop_size):
+            print("\rbuilding agents {:.2f}%...".format(i + 1 / self.pop_size * 100), end="")
             agent = Agent.Agent(self.model_builder, self.mutation_rate, self.starting_cash, self.starting_price, self.trading_fee, i)
             self.agents.append(agent)
+        print("done")
+
 
     def evolve(self, inputs_list, prices_list):
+        c = 0
+        scores = []
+        
+        print("\n\n=================\ngeneration number {}\n=================".format(self.generation_number))
+        print("feeding inputs...")
         self.batch_feed_inputs(inputs_list, prices_list)
+        
+        print("normalizing fitness...")
         self.normalize_fitness()
 
-        output_str = "profits: "
         for agent in self.agents:
-            output_str += "{0:.2f}%".format(agent.get_score()).ljust(10)
-
+            scores.append(agent.get_score())
+        scores.sort()
+        output_str = "\nprofits:\n"
+        for score in scores:
+            output_str += "{0:.2f}%".format(score).ljust(10)
+            c += 1
+            if c % self.output_width == 0:
+                output_str += "\n"
         print(output_str)
+        print("average score: {0:.2f}%".format(float(sum(scores)) / float(len(scores))))
 
         self.generate_next_generation()
 
@@ -35,10 +53,11 @@ class Population(object):
     def normalize_fitness(self):
         s = 0
         for i in range(len(self.agents)):
-            s += self.agents[i].get_score()
+            if self.agents[i].get_score() > 0:
+                s += self.agents[i].get_score()
 
         for i in range(len(self.agents)):
-            if s != 0:
+            if s != 0 and self.agents[i].get_score() > 0:
                 fit = self.agents[i].get_score() / s
                 self.agents[i].set_fitness(fit)
             else:
@@ -61,5 +80,8 @@ class Population(object):
 
     def generate_next_generation(self):
         for i in range(self.pop_size):
+            print("\rcreating next generation {0:.2f}%...".format(i / self.pop_size * 100), end="")
             model = self.pool_selection()
             self.agents[i] = Agent.Agent(self.model_builder, self.mutation_rate, self.starting_cash, self.starting_price, self.trading_fee, i, inherited_model=model)
+        self.generation_number += 1
+        print("done")
