@@ -4,9 +4,10 @@ from keras.models import clone_model
 import numpy as np
 
 class Agent(object):
-    def __init__(self, model_builder, mutation_rate, starting_cash, starting_price, trading_fee, agent_id, inherited_model=None):
+    def __init__(self, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee, agent_id, inherited_model=None):
         self.model_builder = model_builder
         self.mutation_rate = mutation_rate
+        self.mutation_scale = mutation_scale
         self.wallet = Wallet.Wallet(starting_cash, starting_price, trading_fee)
         self.score = 0
         self.fitness = 0
@@ -83,7 +84,6 @@ class Agent(object):
             for j in range(len(weights[0])):
                 for k in range(len(weights[0][j])):
                     if np.random.random() < self.mutation_rate:
-                        weights[0][j][k] += np.random.normal(scale=1) * 0.5
-                        # weights[0][j][k] += np.random.normal(scale=0.1)
+                        weights[0][j][k] += np.random.normal(scale=self.mutation_scale)
 
             self.model.layers[i].set_weights(weights)

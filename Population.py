@@ -2,12 +2,13 @@ import Agent
 import numpy as np
 
 class Population(object):
-    def __init__(self, pop_size, model_builder, mutation_rate, starting_cash, starting_price, trading_fee):
+    def __init__(self, pop_size, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee):
         self.pop_size = pop_size
         self.agents = []
 
         self.model_builder = model_builder
         self.mutation_rate = mutation_rate
+        self.mutation_scale = mutation_scale
         self.starting_cash = starting_cash
         self.starting_price = starting_price
         self.trading_fee = trading_fee
@@ -15,8 +16,8 @@ class Population(object):
         self.output_width = 5
 
         for i in range(self.pop_size):
-            print("\rbuilding agents {:.2f}%...".format(i + 1 / self.pop_size * 100), end="")
-            agent = Agent.Agent(self.model_builder, self.mutation_rate, self.starting_cash, self.starting_price, self.trading_fee, i)
+            print("\rbuilding agents {:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
+            agent = Agent.Agent(self.model_builder, self.mutation_rate, self.mutation_scale, self.starting_cash, self.starting_price, self.trading_fee, i)
             self.agents.append(agent)
         print("done")
 
@@ -82,6 +83,6 @@ class Population(object):
         for i in range(self.pop_size):
             print("\rcreating next generation {0:.2f}%...".format(i / self.pop_size * 100), end="")
             model = self.pool_selection()
-            self.agents[i] = Agent.Agent(self.model_builder, self.mutation_rate, self.starting_cash, self.starting_price, self.trading_fee, i, inherited_model=model)
+            self.agents[i] = Agent.Agent(self.model_builder, self.mutation_rate, self.mutation_scale, self.starting_cash, self.starting_price, self.trading_fee, i, inherited_model=model)
         self.generation_number += 1
         print("done")
