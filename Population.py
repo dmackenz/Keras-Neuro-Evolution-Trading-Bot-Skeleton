@@ -65,19 +65,30 @@ class Population(object):
                 self.agents[i].set_fitness(0)
 
     def pool_selection(self):
+        # index = 0
+        # r = np.random.random()
+
+        # while r > 0:
+        #     r -= self.agents[index].get_fitness()
+        #     index += 1
+
+        #     if index == len(self.agents):
+        #         break
+
+        # index -= 1
+
+        # return self.agents[index].model
+
         index = 0
-        r = np.random.random()
+        max_fit = 0
 
-        while r > 0:
-            r -= self.agents[index].get_fitness()
-            index += 1
-
-            if index == len(self.agents):
-                break
-
-        index -= 1
+        for idx, agent in enumerate(self.agents):
+            if max_fit < agent.get_fitness():
+                max_fit = agent.get_fitness()
+                index = idx
 
         return self.agents[index].model
+
 
     def generate_next_generation(self):
         for i in range(self.pop_size):
