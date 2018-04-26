@@ -24,21 +24,29 @@ for fitness in fitnesses:
 
 # Selection Algorithm
 ```Python
-fitnesses.sort(reversed=True)
-
-r = np.random.random()
 cnt = 0
 index = 0
 
+# sort fitnesses in descending order
+fitnesses.sort(reversed=True)
+
+# generate random number between 0 and 1
+r = np.random.random()
+
+# when the accumulated fitness is higher than the random value that index is selected for breeding
 while cnt < r:
+	# count upward by the accumulating fitness
 	cnt += fitnesses[index]
 	index += 1
 
+	# avoid floating point issues
 	if index == len(fitnesses):
 		break
 
+# go back an index
 index -= 1
 
+# return agent at index
 return agent[index]
 ```
 
