@@ -43,6 +43,6 @@ if __name__ == '__main__':
 | File | Purpose |
 | ------ | ------ |
 | evolution | Example of how to run this program.  |
-| Population | Creates a population of neural networks and contains the algorithms for genetic algorithms. |
-| Agent | Creates a trading agent that makes trading decisions based on its genes. |
-| Wallet | Tracks the money that a trading agent creates throughout its generation. |
+| Population | Creates a population of Agents and contains the methods for genetic algorithms. |
+| Agent | Creates a trading agent that makes trading decisions based on its neural network. |
+| Wallet | Tracks the money that a trading agent earns throughout its generation. |
