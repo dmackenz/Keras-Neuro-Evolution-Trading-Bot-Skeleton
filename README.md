@@ -18,7 +18,7 @@ for fitness in fitnesses:
 sum_fitnesss = sum(fitneses)
 
 # bound new fitness between 0 and 1 
-for fitness in fitnesss:
+for fitness in fitnesses:
 	fitness /= sum_fitness
 ```
 
