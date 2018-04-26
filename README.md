@@ -22,6 +22,26 @@ for fitness in fitnesses:
 	fitness /= sum_fitness
 ```
 
+# Selection Algorithm
+```Python
+fitnesses.sort(reversed=True)
+
+r = np.random.random()
+cnt = 0
+index = 0
+
+while cnt < r:
+	cnt += fitnesses[index]
+	index += 1
+
+	if index == len(fitnesses):
+		break
+
+index -= 1
+
+return agent[index]
+```
+
 # Example
 Note that this example can be seen in evolution.py.
 ```python
