@@ -22,7 +22,7 @@ for fitness in fitnesses:
 	fitness /= sum_fitness
 ```
 
-# Selection Algorithm
+# Selection Algorithm (pseudo-code)
 ```Python
 cnt = 0
 index = 0
