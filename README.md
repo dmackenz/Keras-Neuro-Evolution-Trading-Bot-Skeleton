@@ -3,6 +3,25 @@ This project outlines the skeleton for creating a neuro-evolution trading bot wi
 
 This is in early stages of development and has only proven that it is capable of evolving a neural network to generate profit in a trading bot scenario. This project does not directly connect to an exchange API (but could be easily extendable via the Wallet class). I am not responsible for other's use cases of this program and the money that they make or lose with this program.
 
+# Fitness Normalization Algorithm (pseudo-code)
+NOTE: fitness is the percentage of profit that the bot earned from its starting capital
+```Python
+# get min and max fitness
+min_fitness = min(fitnesses)
+max_fitness = max(fitnesses)
+
+# linearly scale all fitness between 0 & 1 then square giving higher fitness more of an edge
+for fitness in fitnesses:
+	fitness = ((fitness - min_fitness) - (max_fitness - min_fitness)) ** 2
+
+# get sum of new fitnesses
+sum_fitnesss = sum(fitneses)
+
+# bound new fitness between 0 and 1 
+for fitness in fitnesss:
+	fitness /= sum_fitness
+```
+
 # Example
 Note that this example can be seen in evolution.py.
 ```python
