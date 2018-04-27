@@ -4,14 +4,14 @@ from keras.models import clone_model
 import numpy as np
 
 class Agent(object):
-    def __init__(self, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee, agent_id, inherited_model=None):
-        self.model_builder = model_builder
-        self.mutation_rate = mutation_rate
-        self.mutation_scale = mutation_scale
-        self.wallet = Wallet.Wallet(starting_cash, starting_price, trading_fee)
+    def __init__(self, population, agent_id, inherited_model=None):
+        self.population = population
+        self.wallet = Wallet.Wallet(self.population.starting_cash, self.population.starting_price, self.population.trading_fee)
+        self.agent_id = agent_id
+
         self.score = 0
         self.fitness = 0
-        self.agent_id = agent_id
+        self.model = None
 
         self.BUY = 1
         self.SELL = 2
@@ -23,10 +23,7 @@ class Agent(object):
             self.model = model_copy
             self.mutate()
         else:
-            self.model = self.model_builder()
-
-    def update_score(self, price):
-        self.score = self.wallet.get_swing_earnings(price)
+            self.model = self.population.model_builder()
 
     def get_score(self):
         return self.score
@@ -70,7 +67,7 @@ class Agent(object):
             elif encoded == self.SELL:
                 self.wallet.sell(prices[idx])
 
-        self.update_score(prices[-1])
+        self.score = self.wallet.get_swing_earnings(prices[-1])
 
     def save(self, filename):
         self.model.save_model(filename)
@@ -83,7 +80,7 @@ class Agent(object):
             # currently only tested on Dense
             for j in range(len(weights[0])):
                 for k in range(len(weights[0][j])):
-                    if np.random.random() < self.mutation_rate:
-                        weights[0][j][k] += np.random.normal(scale=self.mutation_scale)
+                    if np.random.random() < self.population.mutation_rate:
+                        weights[0][j][k] += np.random.normal(scale=self.population.mutation_scale) * 0.5
 
             self.model.layers[i].set_weights(weights)

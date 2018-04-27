@@ -16,7 +16,7 @@ def build_model():
 if __name__ == '__main__':
     pop_size = 50
     mutation_rate = 0.05
-    mutation_scale = 0.1
+    mutation_scale = 0.3
     starting_cash = 1
     trading_fee = 0
 
@@ -41,4 +41,5 @@ if __name__ == '__main__':
     pop = Population.Population(pop_size, build_model, mutation_rate, mutation_scale, starting_cash, prices[0], trading_fee)
 
     while True:
+    # for i in range(1):
         pop.evolve(inputs, prices)
