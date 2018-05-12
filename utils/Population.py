@@ -1,5 +1,8 @@
 from utils.Agent import Agent
+from keras import backend as K
+from keras.models import load_model
 import numpy as np
+import os
 
 
 class Population(object):
@@ -62,27 +65,33 @@ class Population(object):
             self.agents[i].fitness = fit
 
     def pool_selection(self):
-        index = 0
+        idx, cnt = 0, 0
         r = np.random.random()
-        cnt = 0
 
-        while cnt < r:
-            cnt += self.agents[index].fitness
-            index += 1
+        while cnt < r and idx != len(self.agents):
+            cnt += self.agents[idx].fitness
+            idx += 1
 
-            if index == len(self.agents):
-                break
-
-        index -= 1
-
-        return self.agents[index].model
+        return idx - 1
 
     def generate_next_generation(self):
-        newAgents = []
+        # find models to mutate to next generation
+        newAgents_idx = []
         for i in range(len(self.agents)):
+            newAgents_idx.append(self.pool_selection())
+
+        # temporarily save models and clear session    
+        for idx, model_idx in enumerate(newAgents_idx):
+            self.agents[model_idx].model.save('model{0}.h5'.format(idx))
+        
+        K.clear_session()
+
+        # reload models
+        newAgents = []
+        for i in range(len(newAgents_idx)):
             print("\rcreating next generation {0:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
-            model = self.pool_selection()
-            newAgents.append(Agent(self, i, inherited_model=model))
+            newAgents.append(Agent(self, i, inherited_model=load_model('model{0}.h5'.format(i))))
+            os.remove('model{0}.h5'.format(i))
 
         self.agents = newAgents
         self.generation_number += 1
