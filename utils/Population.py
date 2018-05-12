@@ -100,21 +100,11 @@ class Population(object):
         self.agents.sort(key=lambda x: x.fitness, reverse=True)        
 
     def print_scores(self):
-        c = 0
         scores_arr = []
-
         for agent in self.agents:
             scores_arr.append(agent.score)
-        
-        scores_arr.sort()
 
-        output_str = "\naverage score: {0:.2f}%\n".format(np.average(scores_arr))
-        for score in scores_arr:
-            output_str += "{0:.2f}%".format(score).ljust(10)
-            c += 1
-            if c % self.output_width == 0:
-                output_str += "\n"
-        print(output_str)
+        print("\naverage score: {0:.2f}%\n".format(np.average(scores_arr)))
 
     def print_fitnesses(self):
         s = 0
