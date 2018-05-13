@@ -37,7 +37,7 @@ while cnt < r and idx != len(self.agents):
     cnt += self.agents[idx].fitness
     idx += 1
 
-# return agent at index
+# return index of agent
 return idx - 1
 ```
 
