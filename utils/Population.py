@@ -82,7 +82,7 @@ class Population(object):
 
         # temporarily save models and clear session    
         for idx, model_idx in enumerate(newAgents_idx):
-            self.agents[model_idx].model.save('model{0}.h5'.format(idx))
+            self.agents[model_idx].model.save('tmp/model{0}.h5'.format(idx))
         
         K.clear_session()
 
@@ -90,8 +90,8 @@ class Population(object):
         newAgents = []
         for i in range(len(newAgents_idx)):
             print("\rcreating next generation {0:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
-            newAgents.append(Agent(self, i, inherited_model=load_model('model{0}.h5'.format(i))))
-            os.remove('model{0}.h5'.format(i))
+            newAgents.append(Agent(self, i, inherited_model=load_model('tmp/model{0}.h5'.format(i))))
+            os.remove('tmp/model{0}.h5'.format(i))
 
         self.agents = newAgents
         self.generation_number += 1
@@ -104,7 +104,8 @@ class Population(object):
         for agent in self.agents:
             scores_arr.append(agent.score)
 
-        print("\naverage score: {0:.2f}%\n".format(np.average(scores_arr)))
+        print("\naverage score: {0}%".format(int(np.average(scores_arr))))
+        print("largest score: {0:.2f}%\n".format(max(scores_arr)))
 
     def print_fitnesses(self):
         s = 0

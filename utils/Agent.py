@@ -16,7 +16,6 @@ class Agent(object):
         self.fitness = 0
         self.model = None
 
-        # object structs
         self.BUY = 1
         self.SELL = 2
         self.SLEEP = 3
