@@ -96,6 +96,9 @@ class Population(object):
         self.agents = newAgents
         self.generation_number += 1
 
+        # mutation scale decay
+        self.mutation_scale *= 0.95
+
     def sort_by_decreasing_fitness(self):
         self.agents.sort(key=lambda x: x.fitness, reverse=True)        
 
