@@ -27,12 +27,12 @@ if __name__ == '__main__':
     mutation_scale = 0.3
     starting_cash = 1.
     trading_fee = 0
-    generations = 3
+    generations = 10
 
     # generate random test data
     test_size = 100
     np.random.seed(42)
-    prices = np.random.randint(20, size=test_size) + 1
+    prices = np.random.normal(10, 0.1, test_size)
     inputs = np.random.rand(test_size, 4) * 2 - 1
 
     # build initial population
