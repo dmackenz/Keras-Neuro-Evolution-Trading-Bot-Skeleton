@@ -22,13 +22,11 @@ class Agent(object):
 
         # if mutating from an existing model
         if inherited_model:
-            model_copy = clone_model(inherited_model)
-            model_copy.set_weights(inherited_model.get_weights())
-            self.model = model_copy
+            self.model = inherited_model
             self.mutate()
         else:
             self.model = self.population.model_builder()
-
+        
     def batch_encode_prediction(self, predictions):
         # converting output to trade signals
         encodeds = []

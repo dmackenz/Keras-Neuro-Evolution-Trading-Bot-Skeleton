@@ -2,6 +2,7 @@ from utils.Agent import Agent
 from keras import backend as K
 from keras.models import load_model
 import numpy as np
+from keras.models import model_from_json
 import os
 
 
@@ -77,21 +78,24 @@ class Population(object):
     def generate_next_generation(self):
         # find models to mutate to next generation
         newAgents_idx = []
-        for i in range(len(self.agents)):
+        for i in range(self.pop_size):
             newAgents_idx.append(self.pool_selection())
 
-        # temporarily save models and clear session    
-        for idx, model_idx in enumerate(newAgents_idx):
-            self.agents[model_idx].model.save('tmp/model{0}.h5'.format(idx))
-        
+        # temporarily save models and clear session
+        configs, weights = [], []    
+        for model_idx in newAgents_idx:
+            configs.append(self.agents[model_idx].model.to_json())
+            weights.append(self.agents[model_idx].model.get_weights())
+
         K.clear_session()
 
         # reload models
         newAgents = []
-        for i in range(len(newAgents_idx)):
+        for i in range(self.pop_size):
             print("\rcreating next generation {0:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
-            newAgents.append(Agent(self, i, inherited_model=load_model('tmp/model{0}.h5'.format(i))))
-            os.remove('tmp/model{0}.h5'.format(i))
+            loaded = model_from_json(configs[i])
+            loaded.set_weights(weights[i])
+            newAgents.append(Agent(self, i, inherited_model=loaded))
 
         self.agents = newAgents
         self.generation_number += 1
@@ -107,7 +111,7 @@ class Population(object):
         for agent in self.agents:
             scores_arr.append(agent.score)
 
-        print("\naverage score: {0}%".format(int(np.average(scores_arr))))
+        print("\naverage score: {0:.2f}%".format(np.average(scores_arr)))
         print("largest score: {0:.2f}%\n".format(max(scores_arr)))
 
     def print_fitnesses(self):
