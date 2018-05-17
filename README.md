@@ -1,7 +1,5 @@
 # Keras-Neuro-Evolution-Trading-Bot-Skeleton   
 
-**Credit goes to [dmackenz](https://github.com/dmackenz)**   
-
 This project outlines the skeleton for creating a neuro-evolution trading bot with a Keras neural network. This is part of a reinforcement learning strategy to "reward" the neural network whenever it creates a trading strategy that generates profit. After each generation of neural networks, the highest profit networks will carry on to the next generation and produce a new generation of networks that are slightly mutated based on those with the highest profits. This mutation will create new trading strategies based on the inputs provided. If the mutation is not aligned with the end goal of generating profit, then it most likely will not carry on to the next generation.
 
 This is in early stages of development and has only proven that it is capable of evolving a neural network to generate profit in a trading bot scenario. This project does not directly connect to an exchange API (but could be easily extendable via the Wallet class). I am not responsible for other's use cases of this program and the money that they make or lose with this program.
