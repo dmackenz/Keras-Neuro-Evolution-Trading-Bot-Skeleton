@@ -22,28 +22,43 @@ class Population(object):
         self.generation_number = 1
         self.output_width = 5
 
+        plt.ion()
+
         if big_bang == True:
             for i in range(self.pop_size):
                 print("\rbuilding agents {:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
                 agent = Agent(self, i)
                 self.agents.append(agent)
+        print("")
 
     def set_preexisting_agent_base(self, model):
         self.agents = []
         for i in range(self.pop_size):
             self.agents.append(Agent.Agent(self, i, inherited_model=model))
 
-    def evolve(self, inputs_list, prices_list, output_width=5, plot_best=False):
-        print("\n\n======================\ngeneration number {}\n======================".format(self.generation_number))
+    def evolve(self, inputs_list, prices_list, output_width=5, plot_best=False, season_num=None):
+        print("\n======================\ngeneration number {}\n======================".format(self.generation_number))
 
         self.batch_feed_inputs(inputs_list, prices_list)
         self.print_profits(output_width, prices_list)
         self.normalize_fitness()
         self.sort_by_decreasing_fitness()
         if plot_best == True:
-            self.plot_best_agent(prices_list)
+            self.plot_best_agent(prices_list, season_num)
         self.save_best_agent()
         self.generate_next_generation()
+
+    def evolve_over_seasons(self, inputs_list, prices_list, num_seasons=4, epochs_per_season=1):
+        inputs_seasons = np.array_split(inputs_list, num_seasons)
+        prices_seasons = np.array_split(prices_list, num_seasons)
+
+        for inputs, prices in zip(inputs_seasons, prices_seasons):
+            for i in range(epochs_per_season):
+                print("Season {}".format(i + 1))
+                plot_best = False
+                if i == epochs_per_season - 1:
+                    plot_best = True
+                self.evolve(inputs, prices, plot_best=plot_best, season_num=i + 1)
 
     def batch_feed_inputs(self, inputs_list, prices_list):
         for i in range(len(self.agents)):
@@ -56,7 +71,7 @@ class Population(object):
         scores_arr = []
         for agent in self.agents:
             scores_arr.append(agent.score)
-        
+
         mi = min(scores_arr)
         ma = max(scores_arr)
         den = ma - mi
@@ -106,12 +121,13 @@ class Population(object):
             loaded = model_from_json(configs[i])
             loaded.set_weights(weights[i])
             newAgents.append(Agent(self, i, inherited_model=loaded))
+        print("")
 
         self.agents = newAgents
         self.generation_number += 1
 
         # mutation scale decay
-        self.mutation_scale *= 0.95
+        # self.mutation_scale *= 0.95
 
     def sort_by_decreasing_fitness(self):
         self.agents.sort(key=lambda x: x.fitness, reverse=True)        
@@ -125,7 +141,7 @@ class Population(object):
 
         output_str = "\naverage profit: {0:.2f}%\n".format(np.average(profit_arr))
         for score in profit_arr:
-            output_str += "{0:.2f}%".format(score).ljust(20)
+            output_str += "{0:.2f}%".format(score).ljust(12)
             c += 1
             if c % output_width == 0:
                 output_str += "\n"
@@ -135,14 +151,19 @@ class Population(object):
         self.sort_by_decreasing_fitness()
         self.agents[0].save("saved_agent/best_agent")
 
-    def plot_best_agent(self, prices):
+    def plot_best_agent(self, prices, season_num=None):
         indexes, wallet_values = [], []
         for hist in self.agents[0].wallet.cash_history:
             indexes.append(hist[0])
             wallet_values.append(hist[1])
 
+        plt.clf()
+
         plt.figure(1)
-        plt.suptitle("Trading Bot Generation {}".format(self.generation_number))
+        if season_num != None:
+            plt.suptitle("Trading Bot Generation {} Season Number {}".format(self.generation_number, season_num))
+        else:
+            plt.suptitle("Trading Bot Generation {}".format(self.generation_number))
 
         ax1 = plt.subplot(211)
         ax1.set_ylabel("Price Graph")
@@ -152,4 +173,6 @@ class Population(object):
         ax2.set_ylabel("Cash Wallet Value")
         ax2.plot(indexes, wallet_values)
 
-        plt.show()
+        # plt.show()
+        plt.draw()
+        plt.pause(0.001)
