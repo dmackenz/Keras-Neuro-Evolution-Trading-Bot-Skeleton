@@ -1,13 +1,14 @@
 from utils.Agent import Agent
 from keras import backend as K
-from keras.models import load_model
+from keras.models import load_model, model_from_json
+
+import matplotlib.pyplot as plt
+
 import numpy as np
-from keras.models import model_from_json
 import os
 
-
 class Population(object):
-    def __init__(self, pop_size, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee):
+    def __init__(self, pop_size, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee, big_bang=True):
         self.pop_size = pop_size
         self.agents = []
 
@@ -21,26 +22,33 @@ class Population(object):
         self.generation_number = 1
         self.output_width = 5
 
-        for i in range(self.pop_size):
-            print("\rbuilding agents {:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
-            agent = Agent(self, i)
-            self.agents.append(agent)
+        if big_bang == True:
+            for i in range(self.pop_size):
+                print("\rbuilding agents {:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
+                agent = Agent(self, i)
+                self.agents.append(agent)
 
-    def evolve(self, inputs_list, prices_list):
+    def set_preexisting_agent_base(self, model):
+        self.agents = []
+        for i in range(self.pop_size):
+            self.agents.append(Agent.Agent(self, i, inherited_model=model))
+
+    def evolve(self, inputs_list, prices_list, output_width=5, plot_best=False):
+        print("\n\n======================\ngeneration number {}\n======================".format(self.generation_number))
+
         self.batch_feed_inputs(inputs_list, prices_list)
-        self.print_scores()
+        self.print_profits(output_width, prices_list)
         self.normalize_fitness()
         self.sort_by_decreasing_fitness()
+        if plot_best == True:
+            self.plot_best_agent(prices_list)
+        self.save_best_agent()
         self.generate_next_generation()
 
     def batch_feed_inputs(self, inputs_list, prices_list):
-        print("\n\n===================\n"+
-                  "generation number {}\n".format(self.generation_number)+
-                  "===================\n"+
-                  "feeding inputs...")
-        
         for i in range(len(self.agents)):
             self.agents[i].batch_act(inputs_list, prices_list)
+            print("\rFeeding inputs {:.2f}%...".format((i + 1) / self.pop_size * 100), end="")
 
     def normalize_fitness(self):
         print("normalizing fitness...")
@@ -61,9 +69,11 @@ class Population(object):
         for agent in self.agents:
             s += agent.score
 
-        for i in range(1, len(self.agents)):
-            fit = self.agents[i].score / s
-            self.agents[i].fitness = fit
+        for i in range(self.pop_size):
+            if s != 0:
+                self.agents[i].fitness = self.agents[i].score / s
+            else:
+                self.agents[i].fitness = 0
 
     def pool_selection(self):
         idx, cnt = 0, 0
@@ -106,16 +116,40 @@ class Population(object):
     def sort_by_decreasing_fitness(self):
         self.agents.sort(key=lambda x: x.fitness, reverse=True)        
 
-    def print_scores(self):
-        scores_arr = []
+    def print_profits(self, output_width, prices):
+        c = 0
+        profit_arr = []
         for agent in self.agents:
-            scores_arr.append(agent.score)
+            profit_arr.append(agent.wallet.get_swing_earnings(len(prices), prices[-1]))
+        profit_arr.sort()
 
-        print("\naverage score: {0:.2f}%".format(np.average(scores_arr)))
-        print("largest score: {0:.2f}%\n".format(max(scores_arr)))
+        output_str = "\naverage profit: {0:.2f}%\n".format(np.average(profit_arr))
+        for score in profit_arr:
+            output_str += "{0:.2f}%".format(score).ljust(20)
+            c += 1
+            if c % output_width == 0:
+                output_str += "\n"
+        print(output_str)
 
-    def print_fitnesses(self):
-        s = 0
-        for idx, agent in enumerate(self.agents):
-            print(idx, agent.agent_id, agent.fitness)
-            s += agent.fitness
+    def save_best_agent(self):
+        self.sort_by_decreasing_fitness()
+        self.agents[0].save("saved_agent/best_agent")
+
+    def plot_best_agent(self, prices):
+        indexes, wallet_values = [], []
+        for hist in self.agents[0].wallet.cash_history:
+            indexes.append(hist[0])
+            wallet_values.append(hist[1])
+
+        plt.figure(1)
+        plt.suptitle("Trading Bot Generation {}".format(self.generation_number))
+
+        ax1 = plt.subplot(211)
+        ax1.set_ylabel("Price Graph")
+        ax1.plot(prices)
+
+        ax2 = plt.subplot(212, sharex=ax1)
+        ax2.set_ylabel("Cash Wallet Value")
+        ax2.plot(indexes, wallet_values)
+
+        plt.show()

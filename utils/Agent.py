@@ -2,7 +2,6 @@ from utils.Wallet import Wallet
 from keras.models import clone_model
 import numpy as np
 
-
 class Agent(object):
     def __init__(self, population, agent_id, inherited_model=None):
         self.population = population
@@ -44,15 +43,18 @@ class Agent(object):
         # simulate trades based on trade signals
         for idx, encoded in enumerate(encodeds):
             if encoded == self.BUY:
-                self.wallet.buy(prices[idx])
+                self.wallet.buy(idx, prices[idx])
             elif encoded == self.SELL:
-                self.wallet.sell(prices[idx])
+                self.wallet.sell(idx, prices[idx])
 
         # evaluate score
-        self.score = self.wallet.get_swing_earnings(prices[-1])
+        self.score = self.wallet.get_swing_earnings(idx, prices[-1])
 
     def save(self, filename):
-        self.model.save_model(filename)
+        model_json = self.model.to_json()
+        with open(filename + ".json", "w") as json_file:
+            json_file.write(model_json)
+        self.model.save_weights(filename + ".h5")
 
     def mutate(self):
         # iterate through each layer of model
