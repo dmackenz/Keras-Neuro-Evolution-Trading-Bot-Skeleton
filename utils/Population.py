@@ -52,13 +52,12 @@ class Population(object):
         inputs_seasons = np.array_split(inputs_list, num_seasons)
         prices_seasons = np.array_split(prices_list, num_seasons)
 
+        cnt = 0
         for inputs, prices in zip(inputs_seasons, prices_seasons):
             for i in range(epochs_per_season):
-                print("Season {}".format(i + 1))
-                plot_best = False
-                if i == epochs_per_season - 1:
-                    plot_best = True
-                self.evolve(inputs, prices, plot_best=plot_best, season_num=i + 1)
+                print("Season {}".format(cnt + 1))
+                self.evolve(inputs, prices, plot_best=True, season_num=cnt + 1)
+            cnt += 1
 
     def batch_feed_inputs(self, inputs_list, prices_list):
         for i in range(len(self.agents)):
