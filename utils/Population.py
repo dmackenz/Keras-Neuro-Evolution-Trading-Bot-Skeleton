@@ -34,7 +34,7 @@ class Population(object):
     def set_preexisting_agent_base(self, model):
         self.agents = []
         for i in range(self.pop_size):
-            self.agents.append(Agent.Agent(self, i, inherited_model=model))
+            self.agents.append(Agent(self, i, inherited_model=model))
 
     def evolve(self, inputs_list, prices_list, output_width=5, plot_best=False, season_num=None):
         print("\n======================\ngeneration number {}\n======================".format(self.generation_number))
