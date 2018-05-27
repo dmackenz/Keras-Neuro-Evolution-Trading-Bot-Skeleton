@@ -52,6 +52,7 @@ class Agent(object):
 
     def save(self, filename):
         model_json = self.model.to_json()
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename + ".json", "w") as json_file:
             json_file.write(model_json)
         self.model.save_weights(filename + ".h5")
