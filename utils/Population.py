@@ -76,7 +76,10 @@ class Population(object):
         den = ma - mi
 
         for i in range(len(self.agents)):
-            new_score = ((self.agents[i].score - mi) / den) ** 2
+            try:
+                new_score = ((self.agents[i].score - mi) / den) ** 2
+            except:
+                new_score = 0
             self.agents[i].score = new_score
 
         s = 0
