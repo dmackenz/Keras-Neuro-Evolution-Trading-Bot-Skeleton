@@ -26,8 +26,7 @@ class Wallet:
             self.cash_wallet = self.btc_wallet * price * (1 - self.trading_fee)
 
             self.cash_history.append([idx, self.cash_wallet])
-            self.trade_history.append(self.cash_wallet / self.old_cash_wallet * 100 - 100)
-
+            self.trade_history.append([idx, price, self.cash_wallet, self.cash_wallet / self.old_cash_wallet * 100 - 100, self.btc_wallet])
 
             self.btc_wallet = 0
             self.isHolding = False
@@ -38,6 +37,22 @@ class Wallet:
     def get_swing_earnings(self, idx, final_price):
         self.sell(idx, final_price)
         return (self.cash_wallet / self.starting_cash) * 100 - 100
+
+    def dump_trades(self, filename):
+        f = open(filename, 'w')
+        just = 26
+
+        f.write("idx".ljust(just))
+        f.write("price".ljust(just))
+        f.write("cash_wallet".ljust(just))
+        f.write("percent_change".ljust(just))
+        f.write("btc_wallet".ljust(just))
+        f.write("\n")
+
+        for trade in self.trade_history:
+            for el in trade:
+                f.write("{:f}".format(el).ljust(just))
+            f.write("\n")
 
 if __name__ == '__main__':
     starting_cash = 10

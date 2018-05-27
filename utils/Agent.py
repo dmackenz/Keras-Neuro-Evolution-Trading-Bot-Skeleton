@@ -5,9 +5,7 @@ import numpy as np
 class Agent(object):
     def __init__(self, population, agent_id, inherited_model=None):
         self.population = population
-        self.wallet = Wallet(self.population.starting_cash, 
-                             self.population.starting_price, 
-                             self.population.trading_fee)
+        self.wallet = Wallet(self.population.starting_cash, self.population.starting_price, self.population.trading_fee)
 
         self.agent_id = agent_id
 
@@ -25,14 +23,27 @@ class Agent(object):
             self.mutate()
         else:
             self.model = self.population.model_builder()
-        
+
     def batch_encode_prediction(self, predictions):
         # converting output to trade signals
         encodeds = []
-        for prediction in predictions:
-            if np.argmax(prediction) == 0: encodeds.append(self.BUY)
-            elif np.argmax(prediction) == 1: encodeds.append(self.SELL)
-            else: encodeds.append(self.SLEEP)
+
+        if self.population.has_one_output == True:
+            for prediction in predictions:
+                if prediction[0] >= 0:
+                    encodeds.append(self.BUY)
+                else:
+                    encodeds.append(self.SELL)
+        else:
+            if (self.population.has_sleep_functionality):
+                for prediction in predictions:
+                    if np.argmax(prediction) == 0: encodeds.append(self.BUY)
+                    elif np.argmax(prediction) == 1: encodeds.append(self.SELL)
+                    else: encodeds.append(self.SLEEP)
+            else:
+                for prediction in predictions:
+                    if np.argmax(prediction) == 0: encodeds.append(self.BUY)
+                    else: encodeds.append(self.SELL)
 
         return encodeds
 

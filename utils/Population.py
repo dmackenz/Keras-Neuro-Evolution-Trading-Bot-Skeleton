@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import os
+import random
 
 class Population(object):
-    def __init__(self, pop_size, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee, big_bang=True):
+    def __init__(self, pop_size, model_builder, mutation_rate, mutation_scale, starting_cash, starting_price, trading_fee, big_bang=True, remove_sleep=False, one_output=False, dump_trades=False, dump_file=None):
         self.pop_size = pop_size
         self.agents = []
 
@@ -19,8 +20,14 @@ class Population(object):
         self.starting_price = starting_price
         self.trading_fee = trading_fee
 
+        self.has_sleep_functionality = not remove_sleep
+        self.has_one_output = one_output
+
         self.generation_number = 1
         self.output_width = 5
+
+        self.dump_trades = dump_trades
+        self.dump_file = dump_file
 
         plt.ion()
 
@@ -36,6 +43,17 @@ class Population(object):
         for i in range(self.pop_size):
             self.agents.append(Agent(self, i, inherited_model=model))
 
+    def validate(self, inputs_list, prices_list, output_width=5, plot_best=True):
+        season_num = None
+        self.batch_feed_inputs(inputs_list, prices_list)
+        self.print_profits(output_width, prices_list)
+        self.normalize_fitness()
+        self.sort_by_decreasing_fitness()
+        if plot_best == True:
+            self.plot_best_agent(prices_list, season_num)
+        if self.dump_trades == True:
+            self.agents[0].wallet.dump_trades(self.dump_file)
+
     def evolve(self, inputs_list, prices_list, output_width=5, plot_best=False, season_num=None):
         print("\n======================\ngeneration number {}\n======================".format(self.generation_number))
 
@@ -45,19 +63,31 @@ class Population(object):
         self.sort_by_decreasing_fitness()
         if plot_best == True:
             self.plot_best_agent(prices_list, season_num)
+        if self.dump_trades == True:
+            self.agents[0].wallet.dump_trades(self.dump_file)
+
         self.save_best_agent()
         self.generate_next_generation()
 
-    def evolve_over_seasons(self, inputs_list, prices_list, num_seasons=4, epochs_per_season=1):
+    def evolve_over_seasons(self, inputs_list, prices_list, num_seasons=4, epochs_per_season=1, roulette=False):
         inputs_seasons = np.array_split(inputs_list, num_seasons)
         prices_seasons = np.array_split(prices_list, num_seasons)
 
-        cnt = 0
-        for inputs, prices in zip(inputs_seasons, prices_seasons):
-            for i in range(epochs_per_season):
-                print("Season {}".format(cnt + 1))
-                self.evolve(inputs, prices, plot_best=True, season_num=cnt + 1)
-            cnt += 1
+        if roulette == False:
+            cnt = 0
+            for inputs, prices in zip(inputs_seasons, prices_seasons):
+                for i in range(epochs_per_season):
+                    self.evolve(inputs, prices, plot_best=True, season_num=cnt + 1)
+                cnt += 1
+        else:
+            l = range(num_seasons)
+            for j in range(num_seasons):
+                choice = random.choice(l)
+                inputs = inputs_seasons[choice]
+                prices = prices_seasons[choice]
+
+                for i in range(epochs_per_season):
+                    self.evolve(inputs, prices, plot_best=True, season_num=choice + 1)
 
     def batch_feed_inputs(self, inputs_list, prices_list):
         for i in range(len(self.agents)):
@@ -76,6 +106,7 @@ class Population(object):
         den = ma - mi
 
         for i in range(len(self.agents)):
+            new_score = None
             try:
                 new_score = ((self.agents[i].score - mi) / den) ** 2
             except:
@@ -163,7 +194,7 @@ class Population(object):
 
         plt.figure(1)
         if season_num != None:
-            plt.suptitle("Trading Bot Generation {} Season Number {}".format(self.generation_number, season_num))
+            plt.suptitle("Trading Bot Generation {} Season {}".format(self.generation_number, season_num))
         else:
             plt.suptitle("Trading Bot Generation {}".format(self.generation_number))
 
