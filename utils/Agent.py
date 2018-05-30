@@ -1,6 +1,7 @@
 from utils.Wallet import Wallet
 from keras.models import clone_model
 import numpy as np
+import os
 
 class Agent(object):
     def __init__(self, population, agent_id, inherited_model=None):
