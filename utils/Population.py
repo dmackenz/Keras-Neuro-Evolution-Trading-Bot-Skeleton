@@ -109,7 +109,7 @@ class Population(object):
             new_score = None
             try:
                 new_score = ((self.agents[i].score - mi) / den) ** 2
-            except:
+            except ZeroDivisionError:
                 new_score = 0
             self.agents[i].score = new_score
 
